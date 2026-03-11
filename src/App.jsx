@@ -151,7 +151,7 @@ export default function HydraSalesOS() {
       const lead = leads.find(l=>l.id===id);
       const res = await fetchWithTimeout(API, {
         method:"POST", headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({model:MODEL, max_tokens:3000,
+        body:JSON.stringify({model:MODEL, max_tokens:1000,
           system:"You write personalized luxury sales outreach. Output ONLY valid JSON — no markdown, no explanation. Start directly with {.",
           messages:[{role:"user",content:`Write outreach from ${senderName}, ${senderTitle} (${senderEmail}) to ${lead.name}, ${lead.role} at ${lead.company}. Hydra: luxury wellness design firm building turnkey spaces (saunas, cold plunges, steam rooms, red light, cryo, float) in luxury FL homes. $20k-$250k+. Sell the space not equipment. Research: ${JSON.stringify(lead.research)}. Booking: ${bookingLink}. Return ONLY: {"email":{"subject":"...","body":"4-6 sentences, personal hook, soft CTA with booking link"},"linkedin":{"body":"2-3 sentences, conversational"},"sms":{"body":"1-2 sentences"},"followUp1":{"subject":"...","body":"day 3 follow-up"},"followUp2":{"subject":"...","body":"day 7 final nudge"}}`}]
         })
