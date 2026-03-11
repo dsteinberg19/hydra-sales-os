@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 const API = "/api/claude";
-const MODEL = "claude-sonnet-4-20250514";
+const MODEL = "claude-haiku-4-5-20251001";
 const C = { bg:"#080a0f", surface:"#0e1118", border:"#1c2030", gold:"#c9a96e", goldLight:"#e8c98a", text:"#e8e0d4", muted:"#6b7280", green:"#4ade80", red:"#f87171" };
 
 const btn = (v="default") => ({ padding:"9px 18px", borderRadius:"8px", border:"none", cursor:"pointer", fontSize:"12px", fontWeight:600, fontFamily:"inherit", letterSpacing:"0.04em", transition:"all 0.2s",
