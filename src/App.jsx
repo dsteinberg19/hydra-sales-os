@@ -80,7 +80,7 @@ async function searchAndFormat(userQuery, formatInstructions, onStatus) {
   onStatus && onStatus("🔍 Searching the web for leads…");
   const searchRes = await fetchWithTimeout(API, {
     method:"POST", headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({model:MODEL, max_tokens:3000, tools:[{type:"web_search_20250305",name:"web_search"}], messages:[{role:"user",content:userQuery}]})
+    body:JSON.stringify({model:MODEL, max_tokens:1000, tools:[{type:"web_search_20250305",name:"web_search"}], messages:[{role:"user",content:userQuery}]})
   }, 40000);
   const searchData = await searchRes.json();
   if (searchData.error) throw new Error(searchData.error.message);
@@ -88,7 +88,7 @@ async function searchAndFormat(userQuery, formatInstructions, onStatus) {
   onStatus && onStatus("⚙️ Formatting lead data…");
   const formatRes = await fetchWithTimeout(API, {
     method:"POST", headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({model:MODEL, max_tokens:3000, system:"You convert research into structured JSON. Output ONLY valid JSON — no markdown fences, no explanation. Start directly with [ or {.", messages:[{role:"user",content:`${formatInstructions}\n\nResearch:\n${rawText.slice(0,6000)}`}]})
+    body:JSON.stringify({model:MODEL, max_tokens:1000, system:"You convert research into structured JSON. Output ONLY valid JSON — no markdown fences, no explanation. Start directly with [ or {.", messages:[{role:"user",content:`${formatInstructions}\n\nResearch:\n${rawText.slice(0,6000)}`}]})
   }, 30000);
   const formatData = await formatRes.json();
   if (formatData.error) throw new Error(formatData.error.message);
