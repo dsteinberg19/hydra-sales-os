@@ -93,10 +93,20 @@ async function searchAndFormat(userQuery, formatInstructions, onStatus) {
   const formatData = await formatRes.json();
   if (formatData.error) throw new Error(formatData.error.message);
   const text = formatData.content?.filter(b=>b.type==="text").map(b=>b.text).join("")||"";
-  const clean = text.replace(/```json\n?/g,"").replace(/```\n?/g,"").trim();
-  const m = clean.match(/\[[\s\S]*\]/)||clean.match(/\{[\s\S]*\}/);
+const clean = text.replace(/```json\n?/g,"").replace(/```\n?/g,"").trim();
+  const arrM = clean.match(/\[[\s\S]*\]/);
+  const objM = clean.match(/\{[\s\S]*\}/);
+  const m = arrM || objM;
   if (!m) throw new Error("Could not parse response. Please try again.");
-  return JSON.parse(m[0]);
+  try {
+    return JSON.parse(m[0]);
+  } catch(e) {
+    const fixed = m[0]
+      .replace(/[\u0000-\u001F\u007F-\u009F]/g, " ")
+      .replace(/,\s*([}\]])/g, "$1")
+      .replace(/([{,]\s*)(\w+):/g, '$1"$2":');
+    return JSON.parse(fixed);
+  }
 }
 
 export default function HydraSalesOS() {
@@ -160,9 +170,19 @@ export default function HydraSalesOS() {
       if (data.error) throw new Error(data.error.message);
       const text = data.content?.filter(b=>b.type==="text").map(b=>b.text).join("")||"";
       const clean = text.replace(/```json\n?/g,"").replace(/```\n?/g,"").trim();
-      const m = clean.match(/\{[\s\S]*\}/);
-      if (!m) throw new Error("Could not parse outreach");
-      updateLead(id,{outreach:JSON.parse(m[0]),status:"done"});
+  const arrM = clean.match(/\[[\s\S]*\]/);
+  const objM = clean.match(/\{[\s\S]*\}/);
+  const m = arrM || objM;
+  if (!m) throw new Error("Could not parse response. Please try again.");
+  try {
+    return JSON.parse(m[0]);
+  } catch(e) {
+    const fixed = m[0]
+      .replace(/[\u0000-\u001F\u007F-\u009F]/g, " ")
+      .replace(/,\s*([}\]])/g, "$1")
+      .replace(/([{,]\s*)(\w+):/g, '$1"$2":');
+    return JSON.parse(fixed);
+  }
     } catch(e) { updateLead(id,{status:"error",errorMsg:e.message}); }
   }
 
