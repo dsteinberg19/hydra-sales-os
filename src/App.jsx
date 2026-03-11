@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const API = "https://api.anthropic.com/v1/messages";
+const API = "/api/claude";
 const MODEL = "claude-sonnet-4-20250514";
 const C = { bg:"#080a0f", surface:"#0e1118", border:"#1c2030", gold:"#c9a96e", goldLight:"#e8c98a", text:"#e8e0d4", muted:"#6b7280", green:"#4ade80", red:"#f87171" };
 
