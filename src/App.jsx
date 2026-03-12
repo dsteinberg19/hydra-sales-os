@@ -113,7 +113,7 @@ export default function HydraSalesOS() {
   const [bookingLink, setBookingLink] = useState("https://calendly.com/your-link");
   const [apolloKey, setApolloKey] = useState("");
   const [hsKey, setHsKey] = useState("");
-
+  const [apolloKey, setApolloKey] = useState("");
   const updateLead = (id, patch) => setLeads(ls=>ls.map(l=>l.id===id?{...l,...patch}:l));
   const qualified = leads.filter(l=>l.research?.score>=7).length;
 
@@ -168,7 +168,22 @@ export default function HydraSalesOS() {
   async function runAll() {
     for (const l of leads.filter(l=>l.status==="pending")) { await runPipeline(l.id); await new Promise(r=>setTimeout(r,1000)); }
   }
-
+async function enrichLead(id) {
+    if (!apolloKey) { alert("Add your Apollo API key in Settings first."); return; }
+    updateLead(id,{enriching:true});
+    try {
+      const lead = leads.find(l=>l.id===id);
+      const res = await fetch("https://api.apollo.io/v1/people/match",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({api_key:apolloKey,name:lead.name,organization_name:lead.company,reveal_personal_emails:true,reveal_phone_number:true})
+      });
+      if (!res.ok) throw new Error("Apollo request failed.");
+      const data = await res.json();
+      const p = data.person;
+      updateLead(id,{email:p?.email||lead.email,phone:p?.phone_numbers?.[0]?.sanitized_number||lead.phone,linkedin:p?.linkedin_url||lead.linkedin,enriching:false,enriched:true});
+    } catch(e) { updateLead(id,{enriching:false}); alert("Enrich failed: "+e.message); }
+  }
   async function pushToHubSpot(id) {
     if (!hsKey) { alert("Add HubSpot token in Settings."); return; }
     updateLead(id,{status:"pushing"});
@@ -280,6 +295,7 @@ export default function HydraSalesOS() {
                   <div style={{ display:"flex", gap:6, flexWrap:"wrap", justifyContent:"flex-end" }}>
                     {lead.status==="pending"&&<button onClick={()=>runPipeline(lead.id)} style={btn("gold")}>Research + Draft</button>}
                     {lead.status==="researched"&&<button onClick={()=>draftOutreach(lead.id)} style={btn("gold")}>✍ Draft</button>}
+                    {!lead.enriched&&lead.status!=="researching"&&lead.status!=="drafting"&&<button onClick={()=>enrichLead(lead.id)} disabled={!!lead.enriching} style={btn()}>{lead.enriching?<Spinner/>:"🔬 Enrich"}</button>}
                     {lead.outreach&&lead.status!=="pushed"&&lead.status!=="pushing"&&<button onClick={()=>pushToHubSpot(lead.id)} style={btn("green")}>→ HubSpot</button>}
                     {lead.status==="pushing"&&<Spinner/>}
                     <button onClick={()=>setExpanded(expanded===lead.id?null:lead.id)} style={btn()}>{expanded===lead.id?"▲":"▼"}</button>
@@ -330,6 +346,7 @@ export default function HydraSalesOS() {
             <Field label="Your Email" value={senderEmail} onChange={setSenderEmail} placeholder="daniel@hydrawellness.com"/>
             <Field label="Booking Link" value={bookingLink} onChange={setBookingLink} placeholder="https://calendly.com/your-link" hint="Embedded in all outreach messages"/>
             <Field label="HubSpot Token" value={hsKey} onChange={setHsKey} type="password" placeholder="pat-na1-xxxxxxxx" hint="HubSpot → Settings → Legacy Apps → Hydra Lead Gen → Auth tab"/>
+            <Field label="Apollo.io API Key" value={apolloKey} onChange={setApolloKey} type="password" placeholder="Your Apollo API key" hint="apollo.io → Settings → Integrations → API"/>
           </div>
           <div style={{ marginTop:24, padding:14, background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, fontSize:12, color:C.muted, fontFamily:"'DM Mono',monospace", lineHeight:1.6 }}>
             ⚠ Settings reset each session. HubSpot push works after adding your token above.
