@@ -113,7 +113,6 @@ export default function HydraSalesOS() {
   const [bookingLink, setBookingLink] = useState("https://calendly.com/your-link");
   const [apolloKey, setApolloKey] = useState("");
   const [hsKey, setHsKey] = useState("");
-  const [apolloKey, setApolloKey] = useState("");
   const updateLead = (id, patch) => setLeads(ls=>ls.map(l=>l.id===id?{...l,...patch}:l));
   const qualified = leads.filter(l=>l.research?.score>=7).length;
 
