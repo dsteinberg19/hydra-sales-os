@@ -64,13 +64,29 @@ function OutreachPanel({ outreach, bookingLink }) {
 }
 
 function parseJSON(text) {
-  const clean = text.replace(/```json\n?/g,"").replace(/```\n?/g,"").replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,"").trim();
+  const clean = text
+    .replace(/```json\n?/g,"")
+    .replace(/```\n?/g,"")
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g,"")
+    .replace(/\u2018|\u2019/g,"'")
+    .replace(/\u201C|\u201D/g,'"')
+    .trim();
   const arrM = clean.match(/\[[\s\S]*\]/);
   const objM = clean.match(/\{[\s\S]*\}/);
   const raw = (arrM || objM)?.[0];
   if (!raw) throw new Error("No JSON found in response");
   try { return JSON.parse(raw); }
-  catch { return JSON.parse(raw.replace(/,\s*([}\]])/g,"$1").replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g,'$1"$2":')); }
+  catch {
+    try {
+      const fixed = raw
+        .replace(/,\s*([}\]])/g,"$1")
+        .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g,'$1"$2":')
+        .replace(/:\s*'([^']*)'/g,':"$1"');
+      return JSON.parse(fixed);
+    } catch {
+      throw new Error("Could not parse response. Please try again.");
+    }
+  }
 }
 
 async function callClaude(messages, system, useSearch=false) {
