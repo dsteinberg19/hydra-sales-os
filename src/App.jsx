@@ -121,7 +121,7 @@ export default function HydraSalesOS() {
     setFinding(true); setFindErr(""); setFindStatus("Searching the web…"); setLeads([]);
     try {
       const loc = query.match(/\b(miami|orlando|tampa|naples|sarasota|palm beach|boca raton|fort lauderdale|jacksonville|jupiter|delray)\b/i)?.[0]||"Florida";
-      const raw = await callClaude([{role:"user",content:`Find luxury home builders, designers, architects in ${loc} Florida working on $3M+ homes. Query: ${query}. List 8 real people with name, company, role.`}], null, true);
+      const raw = await callClaude([{role:"user",content:`Find luxury home builders, designers, architects in ${loc} Florida working on $3M+ homes. Query: ${query}. List 8 real people with name, company, role.`}], null, false);
       setFindStatus("Formatting results…");
       const formatted = await callClaude(
         [{role:"user",content:`Convert this to a JSON array of 8 leads. Each object: {"id":1,"name":"Full Name","type":"B2B","role":"job","company":"company","location":"City, FL","email":"","phone":"","website":"","linkedin":"","estimatedBudget":"$X-$Y","notes":"why good lead","rawScore":7}. Data:\n${raw.slice(0,2000)}`}],
@@ -138,7 +138,7 @@ export default function HydraSalesOS() {
     updateLead(id,{status:"researching"});
     try {
       const lead = leads.find(l=>l.id===id);
-      const raw = await callClaude([{role:"user",content:`Research ${lead.name}, ${lead.role} at ${lead.company} in ${lead.location}. Find projects, background, news.`}], null, true);
+      const raw = await callClaude([{role:"user",content:`Research ${lead.name}, ${lead.role} at ${lead.company} in ${lead.location}. Find projects, background, news.`}], null, false);
       const formatted = await callClaude(
         [{role:"user",content:`Convert to JSON: {"score":8,"scoringReason":"reason","companySize":"size","recentNews":"news","painPoints":["p1"],"personalHooks":["hook"],"idealProduct":"product","estimatedDealSize":"$X-$Y","pushToCRM":true}. Data:\n${raw.slice(0,2000)}`}],
         "Output ONLY valid JSON object. No markdown. Start with {"
